@@ -11,9 +11,9 @@ import ch.noisette.doodle.domains.Subscriber;
 import ch.noisette.doodle.services.PollService;
 
 @Service
-public class DummyPollServiceImpl implements PollService {
+public class PollServiceImpl implements PollService {
 
-	private static final Logger logger_c = Logger.getLogger(DummyPollServiceImpl.class);
+	private static final Logger logger_c = Logger.getLogger(PollServiceImpl.class);
 
 	@Override
 	public Poll getPollById(String pollId) {
