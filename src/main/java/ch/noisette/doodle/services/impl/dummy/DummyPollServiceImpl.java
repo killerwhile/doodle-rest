@@ -153,7 +153,7 @@ public class DummyPollServiceImpl implements PollService {
 
 		try {
 
-			ColumnParent cp = new ColumnParent("poll_attributes");
+			ColumnParent cp = new ColumnParent("poll_subscribers");
 			long timestamp = System.currentTimeMillis();
 
 			Column cLabel = new Column();
