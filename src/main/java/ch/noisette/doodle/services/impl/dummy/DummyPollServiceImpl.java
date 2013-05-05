@@ -1,6 +1,5 @@
 package ch.noisette.doodle.services.impl.dummy;
 
-import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -31,31 +30,31 @@ import ch.noisette.doodle.services.PollService;
 @Service
 public class DummyPollServiceImpl implements PollService {
 
-	private static final Logger logger_c = Logger.getLogger(DummyPollServiceImpl.class);
-	
+	private static final Logger logger_c = Logger
+			.getLogger(DummyPollServiceImpl.class);
+
 	private final int DB_PORT = 9160;
 	private final String DB_HOST = "localhost";
 	private final String DB_KEYSPACE = "doodle";
 	private final String UTF8 = "UTF-8";
-	private TTransport tr;	
-	private Cassandra.Client client;	
-	
+	private TTransport tr;
+	private Cassandra.Client client;
+
 	private void openDBconnection() {
-		
-		
-		tr = new TFramedTransport(new TSocket(DB_HOST,DB_PORT));
-        TProtocol protocol = new TBinaryProtocol(tr);
-        client = new Cassandra.Client(protocol);
-        try {
+
+		tr = new TFramedTransport(new TSocket(DB_HOST, DB_PORT));
+		TProtocol protocol = new TBinaryProtocol(tr);
+		client = new Cassandra.Client(protocol);
+		try {
 			tr.open();
 		} catch (TTransportException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	private void setKeySpace(String keyspace) {
-		
+
 		try {
 			client.set_keyspace(keyspace);
 		} catch (InvalidRequestException e) {
@@ -64,71 +63,71 @@ public class DummyPollServiceImpl implements PollService {
 		} catch (TException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
-	private void closeDBconnection(){
-		tr.close();		
+
+	private void closeDBconnection() {
+		tr.close();
 	}
 
 	@Override
 	public Poll getPollById(String pollId) {
-		
+
 		return new Poll();
 	}
 
 	@Override
 	public List<Poll> getAllPolls() {
 		// TODO Auto-generated method stub
-		return Collections.<Poll>emptyList();
+		return Collections.<Poll> emptyList();
 	}
 
 	@Override
 	public Poll createPoll(Poll poll) {
-		
-		
-		
+
 		String pollID = UUID.randomUUID().toString();
-		
+
 		System.out.println(pollID);
 
-		
 		poll.setId(pollID);
-		
+
 		openDBconnection();
 		setKeySpace(DB_KEYSPACE);
-		
+
 		try {
-			
+
 			ColumnParent cp = new ColumnParent("poll_attributes");
 			long timestamp = System.currentTimeMillis();
-			
+
 			Column cLabel = new Column();
 			cLabel.setName("label".getBytes(UTF8));
 			cLabel.setValue(poll.getLabel().getBytes(UTF8));
 			cLabel.setTimestamp(timestamp);
-			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cLabel, ConsistencyLevel.QUORUM);
-			
+			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cLabel,
+					ConsistencyLevel.QUORUM);
+
 			Column cEmail = new Column();
 			cEmail.setName("email".getBytes(UTF8));
 			cEmail.setValue(poll.getEmail().getBytes(UTF8));
 			cEmail.setTimestamp(timestamp);
-			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cEmail, ConsistencyLevel.QUORUM);
-			
+			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cEmail,
+					ConsistencyLevel.QUORUM);
+
 			Column cMaxChoices = new Column();
 			cMaxChoices.setName("max-choices".getBytes(UTF8));
-			cMaxChoices.setValue(poll.getMaxChoices().toString().getBytes(UTF8));
+			cMaxChoices
+					.setValue(poll.getMaxChoices().toString().getBytes(UTF8));
 			cMaxChoices.setTimestamp(timestamp);
-			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cMaxChoices, ConsistencyLevel.QUORUM);
-			
+			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp,
+					cMaxChoices, ConsistencyLevel.QUORUM);
+
 			Column cChoices = new Column();
 			cChoices.setName("choices".getBytes(UTF8));
 			cChoices.setValue(poll.getChoices().toString().getBytes(UTF8));
 			cChoices.setTimestamp(timestamp);
-			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cChoices, ConsistencyLevel.QUORUM);
-			
-			
+			client.insert(ByteBuffer.wrap(pollID.getBytes(UTF8)), cp, cChoices,
+					ConsistencyLevel.QUORUM);
+
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (InvalidRequestException e) {
@@ -139,17 +138,58 @@ public class DummyPollServiceImpl implements PollService {
 			e.printStackTrace();
 		} catch (TException e) {
 			e.printStackTrace();
-		}		
-		
-		closeDBconnection();	
-		
+		}
+
+		closeDBconnection();
+
 		return poll;
 	}
 
 	@Override
 	public Poll addSubscriber(String pollId, Subscriber subscriber) {
-		// TODO Auto-generated method stub
-		return null;
+
+		openDBconnection();
+		setKeySpace(DB_KEYSPACE);
+
+		try {
+
+			ColumnParent cp = new ColumnParent("poll_attributes");
+			long timestamp = System.currentTimeMillis();
+
+			Column cLabel = new Column();
+			cLabel.setName("label".getBytes(UTF8));
+			cLabel.setValue(subscriber.getLabel().getBytes(UTF8));
+			cLabel.setTimestamp(timestamp);
+			client.insert(ByteBuffer.wrap(pollId.getBytes(UTF8)), cp, cLabel,
+					ConsistencyLevel.QUORUM);
+
+			Column cChoices = new Column();
+			cChoices.setName("choices".getBytes(UTF8));
+			cChoices.setValue(subscriber.getChoices().toString().getBytes(UTF8));
+			cChoices.setTimestamp(timestamp);
+			client.insert(ByteBuffer.wrap(pollId.getBytes(UTF8)), cp, cChoices,
+					ConsistencyLevel.QUORUM);
+
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (InvalidRequestException e) {
+			e.printStackTrace();
+		} catch (UnavailableException e) {
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			e.printStackTrace();
+		} catch (TException e) {
+			e.printStackTrace();
+		}
+
+		closeDBconnection();
+
+		Poll poll = new Poll();
+		poll.setChoices(subscriber.getChoices());
+		poll.setLabel(subscriber.getLabel());
+		poll.setId(pollId);
+
+		return poll;
 	}
 
 	@Override
@@ -157,7 +197,5 @@ public class DummyPollServiceImpl implements PollService {
 		// TODO Auto-generated method stub
 
 	}
-
-
 
 }
