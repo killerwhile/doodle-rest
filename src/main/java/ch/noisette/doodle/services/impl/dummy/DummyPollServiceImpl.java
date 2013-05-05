@@ -12,10 +12,8 @@ import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
-import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.TimedOutException;
@@ -85,40 +83,42 @@ public class DummyPollServiceImpl implements PollService {
 		setKeySpace(DB_KEYSPACE);
 
 		Poll foundPoll = new Poll();
+		foundPoll.setId(pollId);
 
 		try {
 
-			ColumnPath path = new ColumnPath("poll_attributes");
-			path.setColumn(toByteBuffer("label"));
-			ColumnOrSuperColumn result = client.get(toByteBuffer(pollId), path,
+			ColumnParent cp1 = new ColumnParent("poll_attributes");
+			SlicePredicate predicate1 = new SlicePredicate();
+			SliceRange sr1 = new SliceRange(toByteBuffer(""), toByteBuffer(""),
+					false, 10);
+			predicate1.setSlice_range(sr1);
+			List<ColumnOrSuperColumn> attributes = client.get_slice(
+					toByteBuffer(pollId), cp1, predicate1,
 					ConsistencyLevel.QUORUM);
-			foundPoll.setId(pollId);
-			foundPoll.setLabel(toString(result.column.value));
 
-			path.setColumn(toByteBuffer("email"));
-			result = client.get(toByteBuffer(pollId), path,
-					ConsistencyLevel.QUORUM);
-			foundPoll.setEmail(toString(result.column.value));
+			for (ColumnOrSuperColumn c : attributes) {
 
-			path.setColumn(toByteBuffer("max-choices"));
-			result = client.get(toByteBuffer(pollId), path,
-					ConsistencyLevel.QUORUM);
-			foundPoll.setMaxChoices(Integer
-					.parseInt(toString(result.column.value)));
+				String name = toString(c.column.name);
+				String value = toString(c.column.value);
 
-			path.setColumn(toByteBuffer("choices"));
-			result = client.get(toByteBuffer(pollId), path,
-					ConsistencyLevel.QUORUM);
-			String choices = toString(result.column.value);
+				if (name.equals("label")) {
+					foundPoll.setLabel(value);
+				} else if (name.equals("email")) {
+					foundPoll.setEmail(value);
+				} else if (name.equals("max-choices")) {
+					foundPoll.setMaxChoices(Integer.parseInt(value));
+				} else if (name.equals("choices")) {
+					foundPoll.setChoices(stringToStringList(value));
+				}
 
-			foundPoll.setChoices(stringToStringList(choices));
+			}
 
 			// Set Subscribers
 			List<Subscriber> subsList = new ArrayList<Subscriber>();
 			ColumnParent cp = new ColumnParent("poll_subscribers");
 			SlicePredicate predicate = new SlicePredicate();
 			SliceRange sr = new SliceRange(toByteBuffer(""), toByteBuffer(""),
-					false, 0);
+					false, Integer.MAX_VALUE);
 			predicate.setSlice_range(sr);
 			List<ColumnOrSuperColumn> subscribers = client.get_slice(
 					toByteBuffer(pollId), cp, predicate,
@@ -137,8 +137,6 @@ public class DummyPollServiceImpl implements PollService {
 			e.printStackTrace();
 		} catch (InvalidRequestException e) {
 			e.printStackTrace();
-		} catch (NotFoundException e) {
-			return foundPoll;
 		} catch (UnavailableException e) {
 			e.printStackTrace();
 		} catch (TimedOutException e) {
