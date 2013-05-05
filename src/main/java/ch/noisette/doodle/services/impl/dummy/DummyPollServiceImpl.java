@@ -12,6 +12,7 @@ import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.SlicePredicate;
@@ -261,7 +262,6 @@ public class DummyPollServiceImpl implements PollService {
 
 	@Override
 	public void deletePoll(String pollId) {
-		// TODO Auto-generated method stub
 		openDBconnection();
 		setKeySpace(DB_KEYSPACE);
 		ColumnPath path = new ColumnPath();
@@ -272,19 +272,14 @@ public class DummyPollServiceImpl implements PollService {
 			client.remove(ByteBuffer.wrap(pollId.getBytes(UTF8)), path,
 					timestamp, ConsistencyLevel.QUORUM);
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (UnavailableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TimedOutException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
