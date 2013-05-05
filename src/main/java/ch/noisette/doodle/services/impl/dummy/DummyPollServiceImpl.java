@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
@@ -87,8 +88,6 @@ public class DummyPollServiceImpl implements PollService {
 
 		String pollID = UUID.randomUUID().toString();
 
-		System.out.println(pollID);
-
 		poll.setId(pollID);
 
 		openDBconnection();
@@ -157,17 +156,10 @@ public class DummyPollServiceImpl implements PollService {
 			long timestamp = System.currentTimeMillis();
 
 			Column cLabel = new Column();
-			cLabel.setName("label".getBytes(UTF8));
-			cLabel.setValue(subscriber.getLabel().getBytes(UTF8));
+			cLabel.setName(subscriber.getLabel().getBytes(UTF8));
+			cLabel.setValue(subscriber.getChoices().toString().getBytes(UTF8));
 			cLabel.setTimestamp(timestamp);
 			client.insert(ByteBuffer.wrap(pollId.getBytes(UTF8)), cp, cLabel,
-					ConsistencyLevel.QUORUM);
-
-			Column cChoices = new Column();
-			cChoices.setName("choices".getBytes(UTF8));
-			cChoices.setValue(subscriber.getChoices().toString().getBytes(UTF8));
-			cChoices.setTimestamp(timestamp);
-			client.insert(ByteBuffer.wrap(pollId.getBytes(UTF8)), cp, cChoices,
 					ConsistencyLevel.QUORUM);
 
 		} catch (UnsupportedEncodingException e) {
@@ -195,7 +187,33 @@ public class DummyPollServiceImpl implements PollService {
 	@Override
 	public void deletePoll(String pollId) {
 		// TODO Auto-generated method stub
+		openDBconnection();
+		setKeySpace(DB_KEYSPACE);
+		ColumnPath path = new ColumnPath();
+		path.column_family = "poll_attributes";
+		long timestamp = System.currentTimeMillis();
+		logger_c.debug("delte poll: " + pollId);
+		try {
+			client.remove(ByteBuffer.wrap(pollId.getBytes(UTF8)), path,
+					timestamp, ConsistencyLevel.QUORUM);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidRequestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		closeDBconnection();
 
 	}
-
 }
