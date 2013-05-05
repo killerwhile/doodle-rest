@@ -44,6 +44,7 @@ public class DummyPollServiceImpl implements PollService {
 	private final static String DB_HOST = "localhost";
 	private final static String DB_KEYSPACE = "doodle";
 	private final static String UTF8 = "UTF-8";
+
 	private TTransport tr;
 	private Cassandra.Client client;
 
@@ -147,6 +148,7 @@ public class DummyPollServiceImpl implements PollService {
 		}
 
 		return foundPoll;
+
 	}
 
 	@Override
@@ -177,14 +179,16 @@ public class DummyPollServiceImpl implements PollService {
 			cLabel.setValue(poll.getLabel().getBytes(UTF8));
 			cLabel.setTimestamp(timestamp);
 			client.insert(toByteBuffer(pollID), cp, cLabel,
-					ConsistencyLevel.QUORUM);
+
+			ConsistencyLevel.QUORUM);
 
 			Column cEmail = new Column();
 			cEmail.setName("email".getBytes(UTF8));
 			cEmail.setValue(poll.getEmail().getBytes(UTF8));
 			cEmail.setTimestamp(timestamp);
 			client.insert(toByteBuffer(pollID), cp, cEmail,
-					ConsistencyLevel.QUORUM);
+
+			ConsistencyLevel.QUORUM);
 
 			Column cMaxChoices = new Column();
 			cMaxChoices.setName("max-choices".getBytes(UTF8));
@@ -199,7 +203,8 @@ public class DummyPollServiceImpl implements PollService {
 			cChoices.setValue(poll.getChoices().toString().getBytes(UTF8));
 			cChoices.setTimestamp(timestamp);
 			client.insert(toByteBuffer(pollID), cp, cChoices,
-					ConsistencyLevel.QUORUM);
+
+			ConsistencyLevel.QUORUM);
 
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -220,8 +225,49 @@ public class DummyPollServiceImpl implements PollService {
 
 	@Override
 	public Poll addSubscriber(String pollId, Subscriber subscriber) {
-		// TODO Auto-generated method stub
-		return null;
+
+		openDBconnection();
+		setKeySpace(DB_KEYSPACE);
+
+		try {
+
+			ColumnParent cp = new ColumnParent("poll_subscribers");
+			long timestamp = System.currentTimeMillis();
+
+			Column cLabel = new Column();
+			cLabel.setName("label".getBytes(UTF8));
+			cLabel.setValue(subscriber.getLabel().getBytes(UTF8));
+			cLabel.setTimestamp(timestamp);
+			client.insert(ByteBuffer.wrap(pollId.getBytes(UTF8)), cp, cLabel,
+					ConsistencyLevel.QUORUM);
+
+			Column cChoices = new Column();
+			cChoices.setName("choices".getBytes(UTF8));
+			cChoices.setValue(subscriber.getChoices().toString().getBytes(UTF8));
+			cChoices.setTimestamp(timestamp);
+			client.insert(ByteBuffer.wrap(pollId.getBytes(UTF8)), cp, cChoices,
+					ConsistencyLevel.QUORUM);
+
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (InvalidRequestException e) {
+			e.printStackTrace();
+		} catch (UnavailableException e) {
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			e.printStackTrace();
+		} catch (TException e) {
+			e.printStackTrace();
+		}
+
+		closeDBconnection();
+
+		Poll poll = new Poll();
+		poll.setChoices(subscriber.getChoices());
+		poll.setLabel(subscriber.getLabel());
+		poll.setId(pollId);
+
+		return poll;
 	}
 
 	@Override
