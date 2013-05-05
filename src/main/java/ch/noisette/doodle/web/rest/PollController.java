@@ -4,7 +4,16 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.cassandra.thrift.Cassandra;
+import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.log4j.Logger;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -26,6 +35,9 @@ import ch.noisette.doodle.services.PollService;
  */
 @Controller
 public class PollController {
+	
+	
+
 
 	@Autowired
 	private PollService pollService;
@@ -37,6 +49,14 @@ public class PollController {
 	private static final String ERROR_FIELD = "error";
 
 	private static final Logger logger_c = Logger.getLogger(PollController.class);
+	
+	
+	@RequestMapping(value = "/rest/initalizeDB", method = RequestMethod.GET)
+	public ModelAndView initializeDB() {
+		
+		
+		return new ModelAndView();
+	}
 
 	/**
 	 * Gets a poll by poll id.
@@ -48,6 +68,8 @@ public class PollController {
 	@RequestMapping(value = "/rest/polls/{pollId}", method = RequestMethod.GET)
 	public ModelAndView getPoll(@PathVariable("pollId") String pollId) {
 		Poll poll = null;
+		
+
 
 		/* validate poll Id parameter */
 		if (isEmpty(pollId) || pollId.length() < 5) {
