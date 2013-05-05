@@ -1,5 +1,7 @@
 create keyspace doodle with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' and  strategy_options = {replication_factor:1};
 
+use doodle;
+
 create column family poll_attributes with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
 
 create column family poll_subscribers with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
