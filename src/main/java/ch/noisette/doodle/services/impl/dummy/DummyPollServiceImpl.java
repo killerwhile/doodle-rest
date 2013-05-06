@@ -3,7 +3,6 @@ package ch.noisette.doodle.services.impl.dummy;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.UUID;
@@ -15,6 +14,8 @@ import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.KeyRange;
+import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.TimedOutException;
@@ -152,8 +153,41 @@ public class DummyPollServiceImpl implements PollService {
 
 	@Override
 	public List<Poll> getAllPolls() {
-		// TODO Auto-generated method stub
-		return Collections.<Poll> emptyList();
+
+		List<Poll> pollList = new ArrayList<Poll>();
+
+		// get all keys
+		KeyRange keyRange = new KeyRange(Integer.MAX_VALUE);
+		keyRange.setStart_key(new byte[0]);
+		keyRange.setEnd_key(new byte[0]);
+
+		openDBconnection();
+		setKeySpace(DB_KEYSPACE);
+		ColumnParent cp = new ColumnParent("poll_attributes");
+		SlicePredicate predicate = new SlicePredicate();
+		predicate.setSlice_range(new SliceRange(ByteBuffer.wrap(new byte[0]),
+				ByteBuffer.wrap(new byte[0]), false, 100));
+		try {
+			List<KeySlice> keySlices = client.get_range_slices(cp, predicate,
+					keyRange, ConsistencyLevel.ONE);
+
+			for (KeySlice ks : keySlices) {
+				pollList.add(getPollById(new String(ks.getKey())));
+			}
+
+		} catch (InvalidRequestException e) {
+			e.printStackTrace();
+		} catch (UnavailableException e) {
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			e.printStackTrace();
+		} catch (TException e) {
+			e.printStackTrace();
+		}
+
+		closeDBconnection();
+
+		return pollList;
 	}
 
 	@Override

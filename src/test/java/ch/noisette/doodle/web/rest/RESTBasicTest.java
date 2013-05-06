@@ -107,6 +107,8 @@ public class RESTBasicTest {
 		jsonPoll = mapper.writeValueAsString(subscriber);
 		put.setEntity(new StringEntity(jsonPoll, "UTF8"));
 		HttpResponse response1 = client1.execute(put);
+		HttpClient client2 = new DefaultHttpClient();
+		HttpResponse response2 = client2.execute(put);
 		Assert.assertEquals(HttpStatus.OK.value(), response1.getStatusLine()
 				.getStatusCode());
 	}
