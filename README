@@ -1,7 +1,7 @@
 ############################################################
 # ADBS - Cassandra Lab
 #
-# Tobias Schmid <schmid.tobias@students.unibe.ch
+# Tobias Schmid <schmid.tobias@students.unibe.ch>
 # Jürg Weber <juerg.weber@students.unibe.ch>
 ############################################################
 
@@ -113,6 +113,46 @@ Cluster Information:
    Partitioner: org.apache.cassandra.dht.Murmur3Partitioner
    Schema versions: 
         5f3e745b-ea52-348c-9e44-27b3774e9203: [127.0.0.1]
+
+############################################################
+
+6.) Implementation instructions
+
+**Setup Database**
+
+The implementation uses a cassandra. To create the keyspace and column families switch to the cassandra installation folder and start the cassandra daemon.
+Afterwards start the cassandra client:
+./cassandra-cli
+
+And type the following instructions
+
+- create keyspace doodle with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' and  strategy_options = {replication_factor:1};
+- use doodle;
+- create column family poll_attributes with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
+- create column family poll_subscribers with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
+
+This creates the used database. The name of the keyspace is doodle. Within this keyspace we used two column families, namely:
+
+1. column family poll_attributes
+This column family contains the following columns:
+- label
+- email
+- max-choices
+- choices
+
+2. column family poll_subscribers
+- Each subscribers name is an attribut which contains the choices as value.
+
+**Setup Tomcat server**
+In this exercice we used Tomcat v7.0. To setup the tomcat server follow the instructions of http://noisette.ch/unifr/EclipseHelp.pdf
+
+To make the server start working, add to project/properties/Depolyment Assembly/ the follwowing paths:
+- Maven Dependencies
+- /src/main/webapp
+
+**Implementation Details**
+We implemented the database interface to provide the possibility to insert and remove new doodles and new subscribers to the database. The implementation details can be found in the /src folder of this project (see DummyPollServiceImpl.java). Beside this implementation, we extended the test class with some additional test cases to check whether the add_subscirber and delete_poll method are working.
+
 
 
 

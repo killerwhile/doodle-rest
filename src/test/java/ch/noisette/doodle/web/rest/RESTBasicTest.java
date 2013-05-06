@@ -61,7 +61,7 @@ public class RESTBasicTest {
 	}
 
 	@Test
-	public void addSubscriber() throws IOException {
+	public void addSubscribers() throws IOException {
 
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(
@@ -93,10 +93,10 @@ public class RESTBasicTest {
 		post.setEntity(new StringEntity(jsonPoll, "UTF8"));
 
 		HttpResponse response = client.execute(post);
-
-		String pollId = response.getAllHeaders()[1].toString().substring(34);
 		HttpClient client1 = new DefaultHttpClient();
+		String pollId = response.getAllHeaders()[1].toString().substring(34);
 		System.out.println(pollId);
+
 		HttpPut put = new HttpPut(
 				"http://localhost:8080/doodle-rest/rest/polls/" + pollId);
 		put.setHeader("Content-type", "application/json;charset=UTF8");
@@ -107,9 +107,22 @@ public class RESTBasicTest {
 		jsonPoll = mapper.writeValueAsString(subscriber);
 		put.setEntity(new StringEntity(jsonPoll, "UTF8"));
 		HttpResponse response1 = client1.execute(put);
+
+		// adds another subscriber to the doodle request
 		HttpClient client2 = new DefaultHttpClient();
+		HttpPut put1 = new HttpPut(
+				"http://localhost:8080/doodle-rest/rest/polls/" + pollId);
+		put.setHeader("Content-type", "application/json;charset=UTF8");
+		subscriber = new Subscriber();
+		subscriber.setChoices(choices);
+		subscriber.setLabel("housi");
+		jsonPoll = mapper.writeValueAsString(subscriber);
+		put1.setEntity(new StringEntity(jsonPoll, "UTF8"));
 		HttpResponse response2 = client2.execute(put);
+
 		Assert.assertEquals(HttpStatus.OK.value(), response1.getStatusLine()
+				.getStatusCode());
+		Assert.assertEquals(HttpStatus.OK.value(), response2.getStatusLine()
 				.getStatusCode());
 	}
 
