@@ -65,8 +65,8 @@ Returns the poll, JSON encoded
 	set subscribers['0488b290-c153-11e2-b652-c56eefd2b5e3']['709f7180-c153-11e2-b652-c56eefd2b5e3:Benoit'] = '[ "Monday", "Friday" ]';
 
 - The row key is the same UUID than the poll's row key.
-- The column name is a TimeUUID to order the subscription, concatenated with a UTF8 string which is the name of the subscriber
-- The value is a JSON encoded list of strings representing the subscribed ``choices``. Note that if the poll's administateur change the ``choices``, either all the values need to be updated, or (btter) the removed choices are skipped at runtime.
+- The column name is a TimeUUID to order the subscriptions, concatenated with (using CompositeType) a the name of the subscriber in UTF8 string
+- The value is a JSON encoded list of strings representing the subscribed ``choices``. Note that if the poll's administateur change the ``choices`` of the poll, either all the values need to be updated, or (btter) the removed choices are skipped (not displayed) at runtime.
 
 # Implementation
 
