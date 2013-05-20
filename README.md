@@ -3,7 +3,7 @@ Doodle-like REST API backed by Cassandra, used for Fribourg's University Advance
 
 # Homework
 
-The goal of the REST API is to be able to create a poll, subscribe to the poll and retrieve the subsciptions.
+The goal of the exercice is to build a REST API that will be able to create a poll, subscribe to the poll and retrieve the subsciptions.
 
 In REST notation:
 
@@ -11,19 +11,21 @@ In REST notation:
 
     POST /rest/polls
     { "label": "Afterwork", "choices": [ "Monday", "Tuesday", "Friday" ], "email": "benoit@noisette.ch" }
-    
-	## Returns <pollId> (in Location header)
+
+Returns ``pollId`` (in Location header)
 
 ## Subscribe to the poll
 
 	PUT /rest/polls/<pollId>
 	{ "name": "Benoit", "choices": [ "Monday", "Friday" ] }
 
-## Returns the updated Poll JSON encoded
+Returns the updated poll, JSON encoded (see below)
 
 	GET /rest/polls/<pollId>
 
-	## Returns { "poll": { "label": "Afterwork", "choices": [ "Monday", "Tuesday", "Friday" ], "email": "benoit@noisette.ch", "subscribers": [ { "name": "Benoit", "choices": [ "Monday", "Friday" ] }, ... ] } }
+Returns the poll, JSON encoded
+
+	{ "poll": { "label": "Afterwork", "choices": [ "Monday", "Tuesday", "Friday" ], "email": "benoit@noisette.ch", "subscribers": [ { "name": "Benoit", "choices": [ "Monday", "Friday" ] }, ... ] } }
 
 # Proposed Data Model
 
@@ -35,6 +37,7 @@ In REST notation:
 
 ## Colum Families
 
+### polls
 	create column family polls 
 		with key_validation_class = UUIDType 
 		and comparator = AsciiType
@@ -50,7 +53,9 @@ In REST notation:
 	set polls['0488b290-c153-11e2-b652-c56eefd2b5e3']['email'] = 'benoit@noisette.ch';
 
 - ``choices`` is a JSON encoded list of strings.
-- Poll's are not intended to change often of they are put in a dedicated CF where for instance row caching could be turned on.
+- Polls are not intended to change often so they are put in a dedicated CF where for instance row caching could be turned on.
+
+### subscribers
 
 	create column family subscribers
 		with key_validation_class = UUIDType
