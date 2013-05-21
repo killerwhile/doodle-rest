@@ -35,7 +35,7 @@ Returns the poll, JSON encoded
 		with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' 
 		and  strategy_options = {replication_factor:1};
 
-## Colum Families
+## Column Families
 
 ### polls
 	create column family polls 
