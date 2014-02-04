@@ -20,7 +20,6 @@ import ch.noisette.doodle.domains.Poll;
 import ch.noisette.doodle.domains.Subscriber;
 import ch.noisette.doodle.services.PollService;
 
-
 /**
  * PollsController class will expose a series of RESTful endpoints
  */
@@ -36,11 +35,18 @@ public class PollController {
 	private static final String DATA_FIELD = "data";
 	private static final String ERROR_FIELD = "error";
 
-	private static final Logger logger_c = Logger.getLogger(PollController.class);
+	private static final Logger logger_c = Logger
+			.getLogger(PollController.class);
+
+	@RequestMapping(value = "/rest/initalizeDB", method = RequestMethod.GET)
+	public ModelAndView initializeDB() {
+
+		return new ModelAndView();
+	}
 
 	/**
 	 * Gets a poll by poll id.
-	 *
+	 * 
 	 * @param pollId
 	 *            the poll id
 	 * @return the poll
@@ -68,7 +74,7 @@ public class PollController {
 
 	/**
 	 * Gets all polls.
-	 *
+	 * 
 	 * @return the polls
 	 */
 	@RequestMapping(value = "/rest/polls/", method = RequestMethod.GET)
@@ -88,7 +94,7 @@ public class PollController {
 
 	/**
 	 * Creates a new poll.
-	 *
+	 * 
 	 * @param poll
 	 *            the poll
 	 * @return the model and view
@@ -111,7 +117,8 @@ public class PollController {
 		httpResponse_p.setStatus(HttpStatus.CREATED.value());
 
 		/* set location of created resource */
-		httpResponse_p.setHeader("Location", request_p.getContextPath() + "/rest/polls/" + poll.getId());
+		httpResponse_p.setHeader("Location", request_p.getContextPath()
+				+ "/rest/polls/" + poll.getId());
 
 		/**
 		 * Return the view
@@ -121,14 +128,15 @@ public class PollController {
 
 	/**
 	 * Updates poll with given poll id.
-	 *
+	 * 
 	 * @param poll
 	 *            the poll
 	 * @return the model and view
 	 */
 	@RequestMapping(value = { "/rest/polls/{pollId}" }, method = { RequestMethod.PUT })
-	public ModelAndView addSubscriber(@RequestBody Subscriber subscriber, @PathVariable("pollId") String pollId,
-								   HttpServletResponse httpResponse_p) {
+	public ModelAndView addSubscriber(@RequestBody Subscriber subscriber,
+			@PathVariable("pollId") String pollId,
+			HttpServletResponse httpResponse_p) {
 
 		logger_c.debug("Add Subscriber: " + subscriber.toString());
 
@@ -153,14 +161,14 @@ public class PollController {
 
 	/**
 	 * Deletes the poll with the given poll id.
-	 *
+	 * 
 	 * @param pollId
 	 *            the poll id
 	 * @return the model and view
 	 */
 	@RequestMapping(value = "/rest/polls/{pollId}", method = RequestMethod.DELETE)
 	public ModelAndView removePoll(@PathVariable("pollId") String pollId,
-								   HttpServletResponse httpResponse_p) {
+			HttpServletResponse httpResponse_p) {
 
 		logger_c.debug("Deleting Poll Id: " + pollId);
 
@@ -173,10 +181,10 @@ public class PollController {
 		try {
 			pollService.deletePoll(pollId);
 		} catch (Exception e) {
+
 			String sMessage = "Error invoking getPolls. [%1$s]";
 			return createErrorResponse(String.format(sMessage, e.toString()));
 		}
-
 		httpResponse_p.setStatus(HttpStatus.OK.value());
 		return new ModelAndView(jsonView_i, DATA_FIELD, null);
 	}
@@ -187,7 +195,7 @@ public class PollController {
 
 	/**
 	 * Create an error REST response.
-	 *
+	 * 
 	 * @param sMessage
 	 *            the s message
 	 * @return the model and view
@@ -198,7 +206,7 @@ public class PollController {
 
 	/**
 	 * Injector methods.
-	 *
+	 * 
 	 * @param pollService_p
 	 *            the new poll service
 	 */
@@ -208,7 +216,7 @@ public class PollController {
 
 	/**
 	 * Injector methods.
-	 *
+	 * 
 	 * @param view
 	 *            the new json view
 	 */

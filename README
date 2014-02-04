@@ -1,0 +1,161 @@
+############################################################
+# ADBS - Cassandra Lab
+#
+# Tobias Schmid <schmid.tobias@students.unibe.ch>
+# Jürg Weber <juerg.weber@students.unibe.ch>
+############################################################
+
+
+#############################
+## Simple Data Manipulations
+#############################
+
+
+1.) Create a keyspace K1
+    –Replication factor of 1
+
+create keyspace K1 with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' and  strategy_options = {replication_factor:1};
+
+############################################################
+
+2.) Create a column family CF1
+     – Keys are ascii strings
+     – Column names are ascii strings
+     – Values by default are UTF8 strings
+
+use K1;
+
+create column family cf1 with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
+
+############################################################
+
+3.) Insert value v1 for key k1 and column name cn1
+
+set CF1['k1']['cn1']= 'v1';
+
+############################################################
+
+4.) Insert value é for key k1 and column name cn2
+
+set CF1['k1']['cn2']= 'é';
+
+
+############################################################
+
+5.) Insert value v3 for key k1 and column name cn3é
+
+set CF1['k1']['cn3é']= 'v3';
+
+############################################################
+
+6.) Get value for key k1 and column name cn1
+
+GET CF1['k1']['cn1'];
+=> (column=cn1, value=v1, timestamp=1367586028258000)
+Elapsed time: 2.67 msec(s).
+
+
+
+#############################
+## Simple Data Manipulations
+#############################
+
+
+1.) List the node(s) in your cluster
+
+./nodetool ring
+
+Datacenter: datacenter1
+==========
+Replicas: 1
+
+Address    Rack        Status State   Load            Owns                Token                                       
+
+127.0.0.1  rack1       Up     Normal  55.7 KB         100.00%             -9037250532349165247                      
+
+
+############################################################
+
+2.) Move your node to the token 1234567890
+
+./nodetool move 1234567890
+./nodetool ring
+
+Datacenter: datacenter1
+==========
+Replicas: 1
+
+Address    Rack        Status State   Load            Owns                Token                                       
+
+127.0.0.1  rack1       Up     Normal  47.87 KB        100.00%             1234567890  
+
+############################################################
+
+3.) Compact keyspace K1
+
+./nodetool compact K1
+
+############################################################
+
+4.) Compact all keyspaces
+
+./nodetool compact
+
+############################################################
+
+5.) Get the schema version of the node
+
+[default@unknown] use K1;
+Authenticated to keyspace: K1
+[default@K1] describe cluster;
+Cluster Information:
+   Snitch: org.apache.cassandra.locator.SimpleSnitch
+   Partitioner: org.apache.cassandra.dht.Murmur3Partitioner
+   Schema versions: 
+        5f3e745b-ea52-348c-9e44-27b3774e9203: [127.0.0.1]
+
+############################################################
+
+6.) Implementation instructions
+
+**Setup Database**
+
+The implementation uses a cassandra. To create the keyspace and column families switch to the cassandra installation folder and start the cassandra daemon.
+Afterwards start the cassandra client:
+./cassandra-cli
+
+And type the following instructions
+
+- create keyspace doodle with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' and  strategy_options = {replication_factor:1};
+- use doodle;
+- create column family poll_attributes with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
+- create column family poll_subscribers with comparator = AsciiType AND key_validation_class=AsciiType AND default_validation_class = UTF8Type;
+
+This creates the used database. The name of the keyspace is doodle. Within this keyspace we used two column families, namely:
+
+1. column family poll_attributes
+This column family contains the following columns:
+- label
+- email
+- max-choices
+- choices
+
+2. column family poll_subscribers
+- Each subscribers name is an attribut which contains the choices as value.
+
+**Setup Tomcat server**
+In this exercice we used Tomcat v7.0. To setup the tomcat server follow the instructions of http://noisette.ch/unifr/EclipseHelp.pdf
+
+To make the server start working, add to project/properties/Depolyment Assembly/ the follwowing paths:
+- Maven Dependencies
+- /src/main/webapp
+
+**Implementation Details**
+We implemented the database interface to provide the possibility to insert and remove new doodles and new subscribers to the database. The implementation details can be found in the /src folder of this project (see DummyPollServiceImpl.java). Beside this implementation, we extended the test class with some additional test cases to check whether the add_subscirber and delete_poll method are working.
+
+
+
+
+
+
+
